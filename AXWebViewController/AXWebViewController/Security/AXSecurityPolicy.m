@@ -20,7 +20,7 @@
 // THE SOFTWARE.
 
 #import "AXSecurityPolicy.h"
-
+#import "AXWebViewController.h"
 #import <AssertMacros.h>
 
 #if !TARGET_OS_IOS && !TARGET_OS_WATCH && !TARGET_OS_TV
