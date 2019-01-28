@@ -24,6 +24,7 @@
 //  SOFTWARE.
 
 #import "AXWebViewControllerActivity.h"
+#import "AXWebViewController.h"
 
 @implementation AXWebViewControllerActivity
 - (NSString *)activityType {
@@ -31,7 +32,7 @@
 }
 
 - (UIImage *)activityImage {
-    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSBundle *bundle = [NSBundle bundleForClass:[AXWebViewController class]];
     
     NSString *resourcePath = [bundle pathForResource:@"AXWebViewController" ofType:@"bundle"] ;
     
@@ -64,7 +65,7 @@
 }
 
 - (NSString *)activityTitle {
-    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSBundle *bundle = [NSBundle bundleForClass:[AXWebViewController class]];
     
     NSString *resourcePath = [bundle pathForResource:@"AXWebViewController" ofType:@"bundle"] ;
     
@@ -114,7 +115,7 @@
 @implementation AXWebViewControllerActivitySafari
 - (NSString *)activityTitle {
     
-    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSBundle *bundle = [NSBundle bundleForClass:[AXWebViewController class]];
     
     NSString *resourcePath = [bundle pathForResource:@"AXWebViewController" ofType:@"bundle"] ;
     

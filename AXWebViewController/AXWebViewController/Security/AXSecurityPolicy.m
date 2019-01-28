@@ -171,7 +171,7 @@ static NSArray * AXPublicKeyTrustChainForServerTrust(SecTrustRef serverTrust) {
     static NSSet *_defaultPinnedCertificates = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+        NSBundle *bundle = [NSBundle bundleForClass:[AXWebViewController class]];
         _defaultPinnedCertificates = [self certificatesInBundle:bundle];
     });
 
