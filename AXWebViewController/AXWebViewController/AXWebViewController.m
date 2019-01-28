@@ -1812,11 +1812,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
         fixedSpace.width = 35.0f;
-        NSArray *items = [NSArray arrayWithObjects:fixedSpace, refreshStopBarButtonItem, fixedSpace, self.backBarButtonItem, fixedSpace, self.forwardBarButtonItem, fixedSpace, self.actionBarButtonItem, nil];
-        
-        self.navigationItem.rightBarButtonItems = items.reverseObjectEnumerator.allObjects;
-    } else {
-        NSMutableArray *toolItems = [[NSMutableArray alloc] initWithArray:@[]];// @[];
+        NSMutableArray *toolItems = [[NSMutableArray alloc] initWithArray:@[]];
         if (self.extraToolItems) {
             [toolItems addObjectsFromArray:@[self.backBarButtonItem,self.forwardBarButtonItem]];
             [toolItems addObjectsFromArray:self.extraToolItems];
@@ -1824,24 +1820,44 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
         }else{
             [toolItems addObjectsFromArray: @[self.backBarButtonItem,self.forwardBarButtonItem,refreshStopBarButtonItem,self.actionBarButtonItem]];
         }
-        NSMutableArray *barItems = [[NSMutableArray alloc] initWithArray: @[]];
-        [toolItems enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            if (idx == 0) {
-                [barItems addObjectsFromArray:@[fixedSpace,obj,flexibleSpace]];
-            }else if (idx == toolItems.count - 1) {
-                [barItems addObjectsFromArray:@[obj,fixedSpace]];
-            }else{
-                [barItems addObjectsFromArray:@[obj,flexibleSpace]];
-            }
-        }];
-        
-//        NSArray *items = [NSArray arrayWithObjects: fixedSpace, self.backBarButtonItem, flexibleSpace, self.forwardBarButtonItem, flexibleSpace, refreshStopBarButtonItem, flexibleSpace, self.actionBarButtonItem, fixedSpace, nil];
+        NSMutableArray *barItems = [self createToolBarItems:toolItems fixedWidth:0];
+//        NSArray *barItems = [NSArray arrayWithObjects:fixedSpace, refreshStopBarButtonItem, fixedSpace, self.backBarButtonItem, fixedSpace, self.forwardBarButtonItem, fixedSpace, self.actionBarButtonItem, nil];
+        self.navigationItem.rightBarButtonItems = barItems.reverseObjectEnumerator.allObjects;
+    } else {
+        NSMutableArray *toolItems = [[NSMutableArray alloc] initWithArray:@[]];
+        if (self.extraToolItems) {
+            [toolItems addObjectsFromArray:@[self.backBarButtonItem,self.forwardBarButtonItem]];
+            [toolItems addObjectsFromArray:self.extraToolItems];
+            [toolItems addObjectsFromArray:@[refreshStopBarButtonItem, self.actionBarButtonItem]];
+        }else{
+            [toolItems addObjectsFromArray: @[self.backBarButtonItem,self.forwardBarButtonItem,refreshStopBarButtonItem,self.actionBarButtonItem]];
+        }
+        NSMutableArray *barItems = [self createToolBarItems:toolItems fixedWidth:0];
         
         self.navigationController.toolbar.barStyle = self.navigationController.navigationBar.barStyle;
         self.navigationController.toolbar.tintColor = self.navigationController.navigationBar.tintColor;
         self.navigationController.toolbar.barTintColor = self.navigationController.navigationBar.barTintColor;
         self.toolbarItems = barItems;
     }
+}
+
+- (NSArray *)createToolBarItems: (NSArray *) toolItems fixedWidth: (CGFloat) width {
+    UIBarButtonItem *fixedSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
+    UIBarButtonItem *flexibleSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
+    if (width) {
+        fixedSpace.width = width;
+    }
+    NSMutableArray *barItems = [[NSMutableArray alloc] initWithArray: @[]];
+    [toolItems enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (idx == 0) {
+            [barItems addObjectsFromArray:@[fixedSpace,obj,flexibleSpace]];
+        }else if (idx == toolItems.count - 1) {
+            [barItems addObjectsFromArray:@[obj,fixedSpace]];
+        }else{
+            [barItems addObjectsFromArray:@[obj,flexibleSpace]];
+        }
+    }];
+    return barItems;
 }
 
 - (void)updateNavigationItems {
