@@ -368,7 +368,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
     
-    if (_navigationType == AXWebViewControllerNavigationBarItem) {
+    if (_navigationType == AXWebViewControllerNavigationBarItem || YES) {
         [self updateNavigationItems];
     }
     if (@available(iOS 11.0, *)) {} else {
@@ -394,7 +394,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
         [self updateToolbarItems];
     }
     
-    if (_navigationType == AXWebViewControllerNavigationBarItem) {
+    if (_navigationType == AXWebViewControllerNavigationBarItem || YES) {
         [self updateNavigationItems];
     }
     
@@ -433,7 +433,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
         [_progressView removeFromSuperview];
     }
     
-    if (_navigationType == AXWebViewControllerNavigationBarItem) {
+    if (_navigationType == AXWebViewControllerNavigationBarItem || YES) {
         self.navigationController.interactivePopGestureRecognizer.enabled = YES;
     }
     
@@ -460,14 +460,14 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
     [super didRotateFromInterfaceOrientation:fromInterfaceOrientation];
-    if (_navigationType == AXWebViewControllerNavigationBarItem) [self updateNavigationItems];
+    if (_navigationType == AXWebViewControllerNavigationBarItem || YES) [self updateNavigationItems];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
     if ([super respondsToSelector:@selector(viewWillTransitionToSize:withTransitionCoordinator:)]) {
         [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
     }
-    if (_navigationType == AXWebViewControllerNavigationBarItem) [self updateNavigationItems];
+    if (_navigationType == AXWebViewControllerNavigationBarItem || YES) [self updateNavigationItems];
 }
 
 - (BOOL)navigationBar:(UINavigationBar *)navigationBar shouldPopItem:(UINavigationItem *)item {
@@ -568,7 +568,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
         // Update title of vc.
         [self _updateTitleOfWebVC];
         // And update navigation items if needed.
-        if (_navigationType == AXWebViewControllerNavigationBarItem) [self updateNavigationItems];
+        if (_navigationType == AXWebViewControllerNavigationBarItem || YES) [self updateNavigationItems];
     } else {
         [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
     }
@@ -966,7 +966,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     _backgroundLabel.text = AXWebViewControllerLocalizedString(@"loading", @"Loading");
     self.navigationItem.title = AXWebViewControllerLocalizedString(@"loading", @"Loading");
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-    if (_navigationType == AXWebViewControllerNavigationBarItem) {
+    if (_navigationType == AXWebViewControllerNavigationBarItem || YES) {
         [self updateNavigationItems];
     }
     if (_navigationType == AXWebViewControllerNavigationToolItem) {
@@ -1018,7 +1018,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 #endif
     
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-    if (_navigationType == AXWebViewControllerNavigationBarItem) {
+    if (_navigationType == AXWebViewControllerNavigationBarItem || YES) {
         [self updateNavigationItems];
     }
     if (_navigationType == AXWebViewControllerNavigationToolItem) {
@@ -1060,7 +1060,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     // #endif
     _backgroundLabel.text = [NSString stringWithFormat:@"%@%@",AXWebViewControllerLocalizedString(@"load failed:", nil) , error.localizedDescription];
     self.navigationItem.title = AXWebViewControllerLocalizedString(@"load failed", nil);
-    if (_navigationType == AXWebViewControllerNavigationBarItem) {
+    if (_navigationType == AXWebViewControllerNavigationBarItem || YES) {
         [self updateNavigationItems];
     }
     if (_navigationType == AXWebViewControllerNavigationToolItem) {
@@ -1373,7 +1373,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
         [self loadURL:_URL];
     }
     // Update the items.
-    if (_navigationType == AXWebViewControllerNavigationBarItem) {
+    if (_navigationType == AXWebViewControllerNavigationBarItem || YES) {
         [self updateNavigationItems];
     }
     if (_navigationType == AXWebViewControllerNavigationToolItem) {
@@ -1554,7 +1554,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
             break;
         }
     }
-    if (_navigationType == AXWebViewControllerNavigationBarItem) {
+    if (_navigationType == AXWebViewControllerNavigationBarItem || YES) {
         [self updateNavigationItems];
     }
     if (_navigationType == AXWebViewControllerNavigationToolItem) {
