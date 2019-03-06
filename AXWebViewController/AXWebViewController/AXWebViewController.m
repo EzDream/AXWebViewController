@@ -86,6 +86,8 @@ typedef struct {
 @property(strong, nonatomic) UIBarButtonItem *navigationCloseBarButtonItem;
 /// URL from label.
 @property(strong, nonatomic) UILabel *backgroundLabel;
+
+@property(strong, nonatomic) NSArray *navigationRightItems;
 #if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
 /// Progress proxy of progress.
 @property(strong, nonatomic) NJKWebViewProgress *progressProxy;
@@ -335,7 +337,6 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
     [self setupSubviews];
     
     if (_request) {
@@ -351,6 +352,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     
     // Config navigation item
     self.navigationItem.leftItemsSupplementBackButton = YES;
+    self.navigationRightItems = self.navigationItem.rightBarButtonItems;
     
 #if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
     [self progressProxy];
@@ -402,10 +404,12 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
         UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                                                                                     target:self
                                                                                     action:@selector(doneButtonClicked:)];
-        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
             self.navigationItem.leftBarButtonItem = doneButton;
-        else
-            self.navigationItem.rightBarButtonItem = doneButton;
+        } else {
+            self.navigationItem.leftBarButtonItem = doneButton;
+//            self.navigationItem.rightBarButtonItem = doneButton;
+        }
         _doneItem = doneButton;
     }
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone && _showsToolBar && _navigationType == AXWebViewControllerNavigationToolItem) {
@@ -436,8 +440,9 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     if (_navigationType == AXWebViewControllerNavigationBarItem || YES) {
         self.navigationController.interactivePopGestureRecognizer.enabled = YES;
     }
-    
-    [self.navigationItem setLeftBarButtonItems:nil animated:NO];
+    if (!self.isModal) {
+        [self.navigationItem setLeftBarButtonItems:nil animated:NO];
+    }
     
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone && _showsToolBar && _navigationType == AXWebViewControllerNavigationToolItem) {
         [self.navigationController setToolbarHidden:YES animated:animated];
@@ -842,6 +847,19 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     return _swipePanGesture;
 }
 #endif
+
+- (BOOL) isModal {
+    if([self presentingViewController]){
+        return YES;
+    }
+    if([[[self navigationController] presentingViewController] presentedViewController] == [self navigationController]) {
+        return YES;
+    }
+    if([[[self tabBarController] presentingViewController] isKindOfClass:[UITabBarController class]]) {
+        return YES;
+    }
+    return NO;
+}
 #pragma mark - Setter
 #if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
 - (void)setEnabledWebViewUIDelegate:(BOOL)enabledWebViewUIDelegate {
@@ -1823,7 +1841,9 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
             [toolItems addObjectsFromArray: @[self.backBarButtonItem,self.forwardBarButtonItem,refreshStopBarButtonItem,self.actionBarButtonItem]];
         }
         NSMutableArray *barItems = [self createToolBarItems:toolItems fixedWidth:0];
+        [barItems addObjectsFromArray:self.navigationRightItems];
 //        NSArray *barItems = [NSArray arrayWithObjects:fixedSpace, refreshStopBarButtonItem, fixedSpace, self.backBarButtonItem, fixedSpace, self.forwardBarButtonItem, fixedSpace, self.actionBarButtonItem, nil];
+        
         self.navigationItem.rightBarButtonItems = barItems.reverseObjectEnumerator.allObjects;
     } else {
         NSMutableArray *toolItems = [[NSMutableArray alloc] initWithArray:@[]];
@@ -1863,12 +1883,14 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 }
 
 - (void)updateNavigationItems {
-    [self.navigationItem setLeftBarButtonItems:nil animated:NO];
+    if (!self.isModal) {
+        [self.navigationItem setLeftBarButtonItems:nil animated:NO];
+    }
     if (self.webView.canGoBack/* || self.webView.backForwardList.backItem*/) {// Web view can go back means a lot requests exist.
         UIBarButtonItem *spaceButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
         spaceButtonItem.width = 0;
         self.navigationController.interactivePopGestureRecognizer.enabled = NO;
-        if (self.navigationController.viewControllers.count == 1) {
+        if (self.navigationController.viewControllers.count == 1 && NO) {
             NSMutableArray *leftBarButtonItems = [NSMutableArray arrayWithArray:@[spaceButtonItem,self.navigationBackBarButtonItem]];
             // If the top view controller of the navigation controller is current vc, the close item is ignored.
             if (self.showsNavigationCloseBarButtonItem && self.navigationController.topViewController != self){
@@ -1876,7 +1898,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
             }
             
             [self.navigationItem setLeftBarButtonItems:leftBarButtonItems animated:NO];
-        } else {
+        } else if(!self.isModal) {
             if (self.showsNavigationCloseBarButtonItem){
                 [self.navigationItem setLeftBarButtonItems:@[self.navigationCloseBarButtonItem] animated:NO];
             }else{
@@ -1885,7 +1907,9 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
         }
     } else {
         self.navigationController.interactivePopGestureRecognizer.enabled = YES;
-        [self.navigationItem setLeftBarButtonItems:nil animated:NO];
+        if (!self.isModal) {
+            [self.navigationItem setLeftBarButtonItems:nil animated:NO];
+        }
     }
 }
 

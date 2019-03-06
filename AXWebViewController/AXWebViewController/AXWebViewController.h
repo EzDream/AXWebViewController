@@ -250,6 +250,8 @@ API_AVAILABLE(ios(7.0))
 ///
 /// @param error a failed loading error.
 - (void)didFailLoadWithError:(NSError *)error AX_REQUIRES_SUPER;
+
+- (void)_updateTitleOfWebVC;
 @end
 
 /**
