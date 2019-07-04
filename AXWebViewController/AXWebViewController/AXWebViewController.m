@@ -1856,9 +1856,9 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
         }
         NSMutableArray *barItems = [self createToolBarItems:toolItems fixedWidth:0];
         
-        self.navigationController.toolbar.barStyle = self.navigationController.navigationBar.barStyle;
-        self.navigationController.toolbar.tintColor = self.navigationController.navigationBar.tintColor;
-        self.navigationController.toolbar.barTintColor = self.navigationController.navigationBar.barTintColor;
+//        self.navigationController.toolbar.barStyle = self.navigationController.navigationBar.barStyle;
+//        self.navigationController.toolbar.tintColor = self.navigationController.navigationBar.tintColor;
+//        self.navigationController.toolbar.barTintColor = self.navigationController.navigationBar.barTintColor;
         self.toolbarItems = barItems;
     }
 }
