@@ -327,18 +327,28 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
         [container setHitBlock:^() {
             // if (!self.webView.isLoading) [self.webView reloadFromOrigin];
         }];
-        [container setTranslatesAutoresizingMaskIntoConstraints:NO];
+        
         [self.view addSubview:container];
+        CGRect rect = UIEdgeInsetsInsetRect(self.view.bounds, self.containerEdgeInset);
+        container.frame = rect;
+        [container setTranslatesAutoresizingMaskIntoConstraints:NO];
         [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[container]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(container)]];
         [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[container]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(container)]];
         [container setTag:kContainerViewTag];
     }
 }
 
+//-(UIEdgeInsets)containerEdgeInset {
+//    if (!_containerEdgeInset) {
+//        _containerEdgeInset = UIEdgeInsetsZero;
+//    }
+//    return _containerEdgeInset;
+//}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self setupSubviews];
-    
+
     if (_request) {
         [self loadURLRequest:_request];
     } else if (_URL) {
@@ -543,6 +553,8 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     }
 }
 
+- (void) updateProgress: (CGFloat) progress { }
+
 #pragma mark - KVO
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSString *,id> *)change context:(void *)context {
     if ([keyPath isEqualToString:@"estimatedProgress"]) {
@@ -557,6 +569,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
         } else {
             [_progressView setProgress:progress animated:NO];
         }
+        [self updateProgress:progress];
     } else if ([keyPath isEqualToString:@"backgroundColor"]) {
         // #if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
         /*
@@ -619,7 +632,6 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     _webView.backgroundColor = [UIColor clearColor];
     _webView.scrollView.backgroundColor = [UIColor clearColor];
     // Set auto layout enabled.
-    _webView.translatesAutoresizingMaskIntoConstraints = NO;
     if (_enabledWebViewUIDelegate) _webView.UIDelegate = self;
     _webView.navigationDelegate = self;
     // Obverse the content offset of the scroll view.
@@ -684,6 +696,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
                                                           style:UIBarButtonItemStylePlain
                                                          target:self
                                                          action:@selector(goBackClicked:)];
+//    _backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"返回" style:UIBarButtonItemStylePlain target:self action:@selector(goBackClicked:)];
     _backBarButtonItem.width = 18.0f;
     return _backBarButtonItem;
 }
@@ -1798,11 +1811,14 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     [self.containerView addSubview:self.backgroundLabel];
     [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:[_backgroundLabel(<=width)]" options:0 metrics:@{@"width":@(self.view.bounds.size.width)} views:NSDictionaryOfVariableBindings(_backgroundLabel)]];
     [self.containerView addConstraint:[NSLayoutConstraint constraintWithItem:_backgroundLabel attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self.containerView attribute:NSLayoutAttributeCenterX multiplier:1.0 constant:0.0]];
-    // [self.view addConstraint:[NSLayoutConstraint constraintWithItem:_backgroundLabel attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:contentView attribute:NSLayoutAttributeTop multiplier:1.0 constant:-20]];
+
+    
     
     [self.containerView addSubview:self.webView];
-    [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_webView]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_webView)]];
-    [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[_webView]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_webView, topLayoutGuide, bottomLayoutGuide, _backgroundLabel)]];
+    self.webView.frame = self.containerView.bounds;
+//    self.webView.translatesAutoresizingMaskIntoConstraints = NO;
+//    [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_webView]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_webView)]];
+//    [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[_webView]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_webView, topLayoutGuide, bottomLayoutGuide, _backgroundLabel)]];
     [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[_backgroundLabel]-20-[_webView]" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_backgroundLabel, _webView)]];
     
     [self.containerView bringSubviewToFront:_backgroundLabel];

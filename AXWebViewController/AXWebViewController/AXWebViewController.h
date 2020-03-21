@@ -168,6 +168,8 @@ API_AVAILABLE(ios(7.0))
 @property(readwrite, nonatomic) UIBarButtonItem *navigationCloseItem;
 
 @property(nonatomic, strong) NSArray *extraToolItems;
+
+@property (nonatomic, assign) UIEdgeInsets containerEdgeInset;
 /// Get a instance of `AXWebViewController` by a url string.
 ///
 /// @param urlString a string of url to be loaded.
@@ -252,6 +254,8 @@ API_AVAILABLE(ios(7.0))
 - (void)didFailLoadWithError:(NSError *)error AX_REQUIRES_SUPER;
 
 - (void)_updateTitleOfWebVC;
+
+- (void) updateProgress: (CGFloat) progress;
 @end
 
 /**
