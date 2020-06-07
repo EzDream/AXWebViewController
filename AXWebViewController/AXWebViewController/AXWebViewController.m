@@ -34,20 +34,9 @@
 #define AXWebViewControllerLocalizedString(key, comment) \
 NSLocalizedStringFromTableInBundle(key, @"AXWebViewController", self.resourceBundle, comment)
 #endif
-#if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
 
-typedef struct {
-    char *identifier;
-    CGPoint contentOffset;
-} _AXWebViewFrameState;
 
-@interface _AXWebViewProgressView : NJKWebViewProgressView
-/// The view controller controller.
-@property(weak, nonatomic) AXWebViewController *webViewController;
-@end
-#endif
-
-@interface AXWebViewController ()<NJKWebViewProgressDelegate, SKStoreProductViewControllerDelegate>
+@interface AXWebViewController ()<SKStoreProductViewControllerDelegate>
 {
     BOOL _loading;
     UIBarButtonItem * __weak _doneItem;
@@ -88,26 +77,6 @@ typedef struct {
 @property(strong, nonatomic) UILabel *backgroundLabel;
 
 @property(strong, nonatomic) NSArray *navigationRightItems;
-#if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
-/// Progress proxy of progress.
-@property(strong, nonatomic) NJKWebViewProgress *progressProxy;
-/// Progress view to show progress of requests.
-@property(strong, nonatomic) _AXWebViewProgressView *progressView;
-/// Array that hold snapshots of pages.
-@property(strong, nonatomic) NSMutableArray* snapshots;
-/// Current snapshotview displaying on screen when start swiping.
-@property(strong, nonatomic) UIView* currentSnapshotView;
-/// Previous snapshotview.
-@property(strong, nonatomic) UIView* previousSnapshotView;
-/// Background alpha black view.
-@property(strong, nonatomic) UIView* swipingBackgoundView;
-/// Left pan ges.
-@property(strong, nonatomic) UIPanGestureRecognizer* swipePanGesture;
-/// If is swiping now.
-@property(assign, nonatomic)BOOL isSwipingBack;
-/// Updating timer.
-@property(strong, nonatomic) NSTimer *updating;
-#endif
 @end
 
 #if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
@@ -364,17 +333,13 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     self.navigationItem.leftItemsSupplementBackButton = YES;
     self.navigationRightItems = self.navigationItem.rightBarButtonItems;
     
-#if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
-    [self progressProxy];
-    self.view.backgroundColor = [UIColor colorWithRed:0.180 green:0.192 blue:0.196 alpha:1.00];
-    self.progressView.progressBarView.backgroundColor = self.navigationController.navigationBar.tintColor;
-#else
+
     self.view.backgroundColor = [UIColor whiteColor];
     self.progressView.progressTintColor = self.navigationController.navigationBar.tintColor;
     [_webView addObserver:self forKeyPath:@"estimatedProgress" options:NSKeyValueObservingOptionNew context:NULL];
     
     // [_webView.scrollView addObserver:self forKeyPath:@"backgroundColor" options:NSKeyValueObservingOptionNew context:NULL];
-#endif
+
 }
 
 - (void)viewDidLayoutSubviews {
@@ -785,28 +750,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 - (UIBarButtonItem *)navigationCloseItem {
     return _navigationCloseBarButtonItem;
 }
-#if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
-- (NJKWebViewProgress *)progressProxy {
-    if (_progressProxy) return _progressProxy;
-    _progressProxy = [[NJKWebViewProgress alloc] init];
-    self.webView.delegate = _progressProxy;
-    _progressProxy.webViewProxyDelegate = self;
-    _progressProxy.progressDelegate = self;
-    return _progressProxy;
-}
 
-- (_AXWebViewProgressView *)progressView {
-    if (_progressView) return _progressView;
-    CGFloat progressBarHeight = 2.0f;
-    CGRect navigationBarBounds = self.navigationController.navigationBar.bounds;
-    CGRect barFrame = CGRectMake(0, navigationBarBounds.size.height - progressBarHeight, navigationBarBounds.size.width, progressBarHeight);
-    _progressView = [[_AXWebViewProgressView alloc] initWithFrame:barFrame];
-    _progressView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
-    // Set the web view controller to progress view.
-    _progressView.webViewController = self;
-    return _progressView;
-}
-#endif
 
 - (UILabel *)backgroundLabel {
     if (_backgroundLabel) return _backgroundLabel;
@@ -830,36 +774,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     return self.backgroundLabel;
 }
 
-#if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
--(UIView*)swipingBackgoundView{
-    if (!_swipingBackgoundView) {
-        _swipingBackgoundView = [[UIView alloc] initWithFrame:self.view.bounds];
-        _swipingBackgoundView.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.3];
-    }
-    return _swipingBackgoundView;
-}
 
--(NSMutableArray*)snapshots{
-    if (!_snapshots) {
-        _snapshots = [NSMutableArray array];
-    }
-    return _snapshots;
-}
-
--(BOOL)isSwipingBack{
-    if (!_isSwipingBack) {
-        _isSwipingBack = NO;
-    }
-    return _isSwipingBack;
-}
-
--(UIPanGestureRecognizer*)swipePanGesture{
-    if (!_swipePanGesture) {
-        _swipePanGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(swipePanGestureHandler:)];
-    }
-    return _swipePanGesture;
-}
-#endif
 
 - (BOOL) isModal {
     if([self presentingViewController]){
@@ -1005,10 +920,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     if (_navigationType == AXWebViewControllerNavigationToolItem) {
         [self updateToolbarItems];
     }
-#if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
-    _progressView.progress = 0.0;
-    _updating = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(updatingProgress:) userInfo:nil repeats:YES];
-#endif
+
     if (_delegate && [_delegate respondsToSelector:@selector(webViewControllerDidStartLoad:)]) {
         [_delegate webViewControllerDidStartLoad:self];
     }
@@ -1073,14 +985,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
         [_delegate webViewControllerDidFinishLoad:self];
     }
     _loading = NO;
-#if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
-    [_progressView setProgress:0.9 animated:YES];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        if (_progressView.progress != 1.0) {
-            [_progressView setProgress:1.0 animated:YES];
-        }
-    });
-#endif
+
 }
 
 - (void)didFailLoadWithError:(NSError *)error{
@@ -1216,22 +1121,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     [self dismissViewControllerAnimated:YES completion:NULL];
 }
 
-#if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
--(void)swipePanGestureHandler:(UIPanGestureRecognizer*)panGesture{
-    CGPoint translation = [panGesture translationInView:self.webView];
-    CGPoint location = [panGesture locationInView:self.webView];
-    
-    if (panGesture.state == UIGestureRecognizerStateBegan) {
-        if (location.x <= 50 && translation.x >= 0) {  //开始动画
-            [self startPopSnapshotView];
-        }
-    }else if (panGesture.state == UIGestureRecognizerStateCancelled || panGesture.state == UIGestureRecognizerStateEnded){
-        [self endPopSnapShotView];
-    }else if (panGesture.state == UIGestureRecognizerStateChanged){
-        [self popSnapShotViewWithPanGestureDistance:translation.x];
-    }
-}
-#endif
+
 
 #if AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
 #pragma mark - WKUIDelegate
@@ -1612,18 +1502,6 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 }
 #endif
 
-#pragma mark - NJKWebViewProgressDelegate
-
--(void)webViewProgress:(NJKWebViewProgress *)webViewProgress updateProgress:(float)progress
-{
-    // Add progress view to navigation bar.
-    if (self.navigationController && self.progressView.superview != self.navigationController.navigationBar) {
-        [self updateFrameOfProgressView];
-        [self.navigationController.navigationBar addSubview:self.progressView];
-    }
-    [_progressView setProgress:progress animated:YES];
-}
-
 #pragma mark - SKStoreProductViewControllerDelegate.
 - (void)productViewControllerDidFinish:(SKStoreProductViewController *)viewController {
     [viewController dismissViewControllerAnimated:YES completion:NULL];
@@ -1650,146 +1528,7 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
     _progressView.frame = barFrame;
 }
 
-#if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
--(void)pushCurrentSnapshotViewWithRequest:(NSURLRequest*)request{
-    NSURLRequest* lastRequest = (NSURLRequest*)[[self.snapshots lastObject] objectForKey:@"request"];
-    
-    // 如果url是很奇怪的就不push
-    if ([request.URL.absoluteString isEqualToString:@"about:blank"]) {
-        return;
-    }
-    //如果url一样就不进行push
-    if ([lastRequest.URL.absoluteString isEqualToString:request.URL.absoluteString]) {
-        return;
-    }
-    
-    UIView* currentSnapshotView = [self.webView snapshotViewAfterScreenUpdates:YES];
-    [self.snapshots addObject:
-     @{@"request":request,
-       @"snapShotView":currentSnapshotView}
-     ];
-}
 
--(void)startPopSnapshotView{
-    if (self.isSwipingBack) {
-        return;
-    }
-    if (!self.webView.canGoBack) {
-        return;
-    }
-    self.isSwipingBack = YES;
-    //create a center of scrren
-    CGPoint center = CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2);
-    
-    self.currentSnapshotView = [self.webView snapshotViewAfterScreenUpdates:YES];
-    
-    //add shadows just like UINavigationController
-    self.currentSnapshotView.layer.shadowColor = [UIColor blackColor].CGColor;
-    self.currentSnapshotView.layer.shadowOffset = CGSizeMake(3, 3);
-    self.currentSnapshotView.layer.shadowRadius = 5;
-    self.currentSnapshotView.layer.shadowOpacity = 0.75;
-    
-    //move to center of screen
-    self.currentSnapshotView.center = center;
-    
-    self.previousSnapshotView = (UIView*)[[self.snapshots lastObject] objectForKey:@"snapShotView"];
-    center.x -= 60;
-    self.previousSnapshotView.center = center;
-    self.previousSnapshotView.alpha = 1;
-    self.view.backgroundColor = [UIColor colorWithRed:0.180 green:0.192 blue:0.196 alpha:1.00];
-    
-    [self.view addSubview:self.previousSnapshotView];
-    [self.view addSubview:self.swipingBackgoundView];
-    [self.view addSubview:self.currentSnapshotView];
-}
-
--(void)popSnapShotViewWithPanGestureDistance:(CGFloat)distance{
-    if (!self.isSwipingBack) {
-        return;
-    }
-    
-    if (distance <= 0) {
-        return;
-    }
-    
-    CGFloat boundsWidth = CGRectGetWidth(self.view.bounds);
-    CGFloat boundsHeight = CGRectGetHeight(self.view.bounds);
-    
-    CGPoint currentSnapshotViewCenter = CGPointMake(boundsWidth/2, boundsHeight/2);
-    currentSnapshotViewCenter.x += distance;
-    CGPoint previousSnapshotViewCenter = CGPointMake(boundsWidth/2, boundsHeight/2);
-    previousSnapshotViewCenter.x -= (boundsWidth - distance)*60/boundsWidth;
-    
-    self.currentSnapshotView.center = currentSnapshotViewCenter;
-    self.previousSnapshotView.center = previousSnapshotViewCenter;
-    self.swipingBackgoundView.alpha = (boundsWidth - distance)/boundsWidth;
-}
-
--(void)endPopSnapShotView{
-    if (!self.isSwipingBack) {
-        return;
-    }
-    
-    //prevent the user touch for now
-    self.view.userInteractionEnabled = NO;
-    
-    CGFloat boundsWidth = CGRectGetWidth(self.view.bounds);
-    CGFloat boundsHeight = CGRectGetHeight(self.view.bounds);
-    
-    if (self.currentSnapshotView.center.x >= boundsWidth) {
-        // pop success
-        [UIView animateWithDuration:0.2 animations:^{
-            [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
-            
-            self.currentSnapshotView.center = CGPointMake(boundsWidth*3/2, boundsHeight/2);
-            self.previousSnapshotView.center = CGPointMake(boundsWidth/2, boundsHeight/2);
-            self.swipingBackgoundView.alpha = 0;
-        }completion:^(BOOL finished) {
-            [self.previousSnapshotView removeFromSuperview];
-            [self.swipingBackgoundView removeFromSuperview];
-            [self.currentSnapshotView removeFromSuperview];
-            [self goBackClicked];
-            [self.snapshots removeLastObject];
-            self.view.userInteractionEnabled = YES;
-            
-            self.isSwipingBack = NO;
-        }];
-    }else{
-        //pop fail
-        [UIView animateWithDuration:0.2 animations:^{
-            [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
-            
-            self.currentSnapshotView.center = CGPointMake(boundsWidth/2, boundsHeight/2);
-            self.previousSnapshotView.center = CGPointMake(boundsWidth/2-60, boundsHeight/2);
-            self.previousSnapshotView.alpha = 1;
-        }completion:^(BOOL finished) {
-            [self.previousSnapshotView removeFromSuperview];
-            [self.swipingBackgoundView removeFromSuperview];
-            [self.currentSnapshotView removeFromSuperview];
-            self.view.userInteractionEnabled = YES;
-            
-            self.isSwipingBack = NO;
-        }];
-    }
-}
-
-- (void)updatingProgress:(NSTimer *)sender {
-    if (!_loading) {
-        if (_progressView.progress >= 1.0) {
-            [_updating invalidate];
-        }
-        else {
-            [_progressView setProgress:_progressView.progress + 0.05 animated:YES];
-        }
-    }
-    else {
-        [_progressView setProgress:_progressView.progress + 0.05 animated:YES];
-        if (_progressView.progress >= 0.9) {
-            _progressView.progress = 0.9;
-        }
-    }
-}
-#endif
 
 - (void)setupSubviews {
     // Add from label and constraints.
@@ -2108,18 +1847,4 @@ BOOL AX_WEB_VIEW_CONTROLLER_iOS10_0_AVAILABLE() { return AX_WEB_VIEW_CONTROLLER_
 }
 @end
 #endif
-#if !AX_WEB_VIEW_CONTROLLER_USING_WEBKIT
-@implementation _AXWebViewProgressView
-- (void)setProgress:(float)progress animated:(BOOL)animated {
-    [super setProgress:progress animated:animated];
-    
-    if (progress >= 1.0) {
-        if (_webViewController.navigationType == AXWebViewControllerNavigationBarItem) {
-            [_webViewController updateNavigationItems];
-        } else {
-            [_webViewController updateToolbarItems];
-        }
-    }
-}
-@end
-#endif
+
